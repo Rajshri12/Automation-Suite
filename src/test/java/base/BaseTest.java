@@ -40,3 +40,5 @@ public class BaseTest {
         }
     }
 }
+
+// v2: added implicit wait config
