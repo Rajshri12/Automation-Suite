@@ -64,3 +64,5 @@ public class AuthApiTest {
             .statusCode(403);
     }
 }
+
+// v2: added 403 scenario
