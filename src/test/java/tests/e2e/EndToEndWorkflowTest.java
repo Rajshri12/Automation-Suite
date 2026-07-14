@@ -66,3 +66,5 @@ public class EndToEndWorkflowTest extends BaseTest {
             "API config value doesn't match what was entered in UI");
     }
 }
+
+// v2: API config validation step

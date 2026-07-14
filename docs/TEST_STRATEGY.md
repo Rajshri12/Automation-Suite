@@ -49,3 +49,5 @@ On test failure, the `@AfterMethod` teardown captures a screenshot via Selenium'
 | Local | Developer runs `mvn test` |
 | CI (GitHub Actions) | Every push — API tests only (no browser) |
 | Jenkins | Full suite including UI and E2E |
+
+<!-- updated -->
