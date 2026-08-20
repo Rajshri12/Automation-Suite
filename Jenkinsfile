@@ -51,3 +51,5 @@ pipeline {
         }
     }
 }
+
+// v2: archive screenshots on failure
