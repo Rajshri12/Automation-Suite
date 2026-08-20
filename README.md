@@ -1,252 +1,314 @@
+<div align="center">
+
 # 🧪 Automation-Suite
 
-[![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/Rajshri12/Automation-Suite)
-[![Java](https://img.shields.io/badge/Java-11-orange)](https://openjdk.org/projects/jdk/11/)
-[![Selenium](https://img.shields.io/badge/Selenium-4.15-43B02A)](https://www.selenium.dev/)
-[![TestNG](https://img.shields.io/badge/TestNG-7.8-red)](https://testng.org/)
-[![RestAssured](https://img.shields.io/badge/RestAssured-5.3-blue)](https://rest-assured.io/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
+**End-to-End Test Automation Framework for Web Applications & Microservices**
 
-> End-to-End Test Automation Framework covering UI, API, and full workflow validation for web applications and microservices.
+[![Build Status](https://img.shields.io/badge/build-passing-brightgreen?style=for-the-badge&logo=github-actions)](https://github.com/Rajshri12/Automation-Suite/actions)
+[![Java](https://img.shields.io/badge/Java-11-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)](https://openjdk.org/projects/jdk/11/)
+[![Selenium](https://img.shields.io/badge/Selenium-4.15-43B02A?style=for-the-badge&logo=selenium&logoColor=white)](https://www.selenium.dev/)
+[![TestNG](https://img.shields.io/badge/TestNG-7.8-FF6C37?style=for-the-badge)](https://testng.org/)
+[![RestAssured](https://img.shields.io/badge/RestAssured-5.3-4A90E2?style=for-the-badge)](https://rest-assured.io/)
+[![Maven](https://img.shields.io/badge/Maven-3.9-C71A36?style=for-the-badge&logo=apache-maven&logoColor=white)](https://maven.apache.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
+
+<br/>
+
+> *Most projects test UI and API in silos. This framework validates complete business workflows — one action on the UI gets confirmed through the API, and every API state change is reflected correctly in the browser.*
+
+<br/>
+
+</div>
 
 ---
 
-## What This Does
+## 📌 Overview
 
-Most projects test UI and API in silos. This framework validates **complete business workflows** — an action on the UI gets confirmed through the API, and an API change is reflected correctly in the UI. One suite, both layers.
+Automation-Suite is a multi-layer test automation framework built in Java. It covers three distinct testing concerns under a single Maven project:
+
+| Layer | Tool | What it validates |
+|-------|------|--------------------|
+| **UI** | Selenium + TestNG | Browser interactions, visual flows, form validation |
+| **API** | RestAssured + TestNG | HTTP contracts, status codes, payload schema |
+| **E2E** | Selenium + RestAssured | Full business workflows crossing both layers |
+
+The key principle: **UI tests and API tests don't live in separate repos.** A single E2E test can log in via the REST API, navigate the browser to a settings page, create a config via the UI, then assert the backend persists it correctly — all in one test method.
 
 ---
 
-## Architecture
+## 🏗️ System Architecture
 
 ```mermaid
 flowchart TD
-    A[Test Suite Entry\ntestng.xml] --> B{Test Layer}
+    subgraph Entry["🚀 Test Entry Point"]
+        A["testng.xml\nSuite Definition"]
+    end
 
-    B --> C[UI Tests\nSelenium + TestNG]
-    B --> D[API Tests\nRestAssured + TestNG]
-    B --> E[E2E Tests\nUI + API combined]
+    subgraph UILayer["🖥️ UI Layer — Selenium WebDriver"]
+        B["LoginPage"]
+        C["DashboardPage"]
+        D["ConfigPage"]
+        E["BaseTest\nWebDriver lifecycle"]
+        B & C & D --> E
+    end
 
-    C --> F[Page Object Model]
-    F --> G[LoginPage]
-    F --> H[DashboardPage]
-    F --> I[ConfigPage]
+    subgraph APILayer["🔌 API Layer — RestAssured"]
+        F["AuthApiTest\nPOST /auth/login"]
+        G["ConfigApiTest\nGET /config"]
+        H["ReportApiTest\nGET /report"]
+    end
 
-    D --> J[Auth API Tests]
-    D --> K[Config API Tests]
-    D --> L[Report API Tests]
+    subgraph E2ELayer["🔄 E2E Layer — Cross-Validation"]
+        I["EndToEndWorkflowTest\nUI action → API assertion"]
+    end
 
-    E --> M[Login via API]
-    M --> N[Navigate UI]
-    N --> O[Create via UI]
-    O --> P[Validate via API]
-    P --> Q[Assert Report]
+    subgraph CI["⚙️ CI/CD"]
+        J["Jenkins Pipeline"]
+        K["GitHub Actions"]
+    end
 
-    C & D & E --> R[Test Results\n+ Screenshots]
-    R --> S[Jenkins\nCI Pipeline]
-    S --> T{Pass / Fail}
-    T --> |Pass| U[✅ Green Build]
-    T --> |Fail| V[❌ Logs + Screenshots]
+    A --> UILayer
+    A --> APILayer
+    A --> E2ELayer
+
+    UILayer --> L["📊 TestNG Reports\n+ Screenshots"]
+    APILayer --> L
+    E2ELayer --> L
+    L --> CI
+
+    CI --> M{Result}
+    M -->|✅ Pass| N["Green Build\nNotify Team"]
+    M -->|❌ Fail| O["Logs + Screenshots\nArchived"]
 ```
 
 ---
 
-## Page Object Model
+## 🗂️ Page Object Model
 
-Instead of writing raw Selenium in every test, each screen is its own class. Tests stay clean; locator changes stay in one place.
+Each screen in the application has exactly one Java class. Tests interact with methods, not with raw Selenium locators. When a locator changes, you edit one file — not every test that touches that screen.
 
 ```mermaid
 flowchart LR
-    A[LoginTest] --> B[LoginPage]
-    B --> C["enterUsername()"]
-    B --> D["enterPassword()"]
-    B --> E["clickLogin()"]
-    E --> F[DashboardPage]
-    F --> G["isLoaded()"]
-    F --> H["getWelcomeMessage()"]
+    subgraph Tests["Test Classes"]
+        T1["LoginTest"]
+        T2["EndToEndTest"]
+    end
+
+    subgraph Pages["Page Objects"]
+        P1["LoginPage\n─────────────\nenterUsername()\nenterPassword()\nclickLogin()\ngetErrorMessage()"]
+        P2["DashboardPage\n─────────────\nisLoaded()\ngetWelcomeMessage()\nnavigateToConfig()"]
+        P3["ConfigPage\n─────────────\nenterConfigName()\nenterConfigValue()\nsaveConfig()"]
+    end
+
+    subgraph Base["Infrastructure"]
+        B["BaseTest\n─────────────\n@BeforeMethod setUp()\n@AfterMethod tearDown()\nWebDriverManager"]
+    end
+
+    T1 --> P1
+    T1 --> P2
+    T2 --> P1
+    T2 --> P2
+    T2 --> P3
+    P1 & P2 & P3 --> B
 ```
 
 ---
 
-## API Test Coverage
+## 🔌 API Test Coverage Map
 
 ```mermaid
 flowchart TD
-    A[POST /api/auth/login] --> B{Response}
-    B --> C[200 OK\nValid credentials]
-    B --> D[401 Unauthorized\nWrong password]
-    B --> E[400 Bad Request\nMissing fields]
-    B --> F[403 Forbidden\nLocked account]
+    subgraph Auth["POST /api/auth/login"]
+        A1["✅ 200 — valid credentials\ntoken returned"]
+        A2["❌ 401 — wrong password\nerror message returned"]
+        A3["❌ 400 — missing field\nvalidation error"]
+        A4["❌ 403 — locked account\naccess denied"]
+    end
 
-    G[GET /api/config] --> H{Auth Header}
-    H --> I[200 + payload\nToken present]
-    H --> J[401\nNo token]
+    subgraph Config["GET /api/config"]
+        C1["✅ 200 — valid Bearer token\nconfiguration payload"]
+        C2["❌ 401 — no token\nunauthorized"]
+        C3["❌ 403 — expired token\nforbidden"]
+    end
+
+    subgraph Design["Design Rule"]
+        D["Every endpoint tested with:\n• 1 happy path\n• 2+ negative paths\n• edge cases where relevant"]
+    end
+
+    Auth & Config --> Design
 ```
 
 ---
 
-## End-to-End Flow
+## 🔄 End-to-End Sequence
+
+The E2E test validates that what a user does in the browser is accurately persisted and queryable through the API. This catches integration bugs that neither UI-only nor API-only tests can find.
 
 ```mermaid
 sequenceDiagram
     participant T as E2E Test
-    participant API as REST API
-    participant UI as Browser
+    participant B as Browser (Selenium)
+    participant A as REST API
 
-    T->>API: POST /auth/login
-    API-->>T: 200 + JWT token
+    Note over T: Step 1 — Authenticate
+    T->>B: Navigate to /login
+    T->>B: enterUsername() + enterPassword() + clickLogin()
+    B-->>T: Dashboard loaded ✅
 
-    T->>UI: Open dashboard (with token)
-    UI-->>T: Dashboard loaded
+    Note over T: Step 2 — Create config via UI
+    T->>B: navigateToConfig()
+    T->>B: enterConfigName("E2E_Config_123")
+    T->>B: saveConfig()
+    B-->>T: Toast: "Configuration saved" ✅
 
-    T->>UI: Create new config
-    UI-->>T: Config saved confirmation
+    Note over T: Step 3 — Validate via API
+    T->>A: POST /api/auth/login → get JWT
+    T->>A: GET /api/config?name=E2E_Config_123
+    A-->>T: 200 + { value: "automated-test-value" }
 
-    T->>API: GET /config/{id}
-    API-->>T: 200 + config data
-
-    T->>T: Assert UI config == API config ✅
+    Note over T: Step 4 — Cross-assert
+    T->>T: Assert API value == UI input ✅
 ```
 
 ---
 
-## Jenkins CI/CD Pipeline
+## ⚙️ Jenkins CI Pipeline
 
 ```mermaid
 flowchart LR
-    A[Git Push] --> B[Jenkins Trigger]
-    B --> C[Checkout Code]
-    C --> D[mvn clean install]
-    D --> E[Run TestNG Suite]
-    E --> F{All Tests Pass?}
-    F --> |Yes| G[✅ Publish Report\nNotify Team]
-    F --> |No| H[❌ Attach Logs\nScreenshots\nNotify Team]
+    A(["👨‍💻 Developer\nPushes Code"]) --> B["Git Trigger"]
+    B --> C["📥 Checkout\ngit clone"]
+    C --> D["🔨 Build\nmvn clean compile"]
+    D --> E["🧪 Run Suite\nmvn test"]
+    E --> F{"All Tests\nPassed?"}
+
+    F -->|Yes ✅| G["📊 Publish TestNG Report"]
+    F -->|No ❌| H["📎 Archive Logs\n+ Screenshots"]
+
+    G --> I(["🟢 Green Build\nTeam Notified"])
+    H --> J(["🔴 Failed Build\nDev Notified"])
 ```
 
 ---
 
-## Tech Stack
-
-| Tool | Purpose |
-|------|---------|
-| Java 11 | Core language |
-| Selenium WebDriver 4.15 | Browser automation |
-| TestNG 7.8 | Test execution, grouping, parallel runs |
-| RestAssured 5.3 | REST API assertions |
-| WebDriverManager 5.6 | Auto-manages browser drivers |
-| Maven | Build and dependency management |
-| Jenkins | CI/CD pipeline execution |
-| GitHub Actions | Lightweight CI on push |
-
----
-
-## Project Structure
+## 📁 Project Structure
 
 ```
 Automation-Suite/
-├── src/
-│   └── test/
-│       ├── java/
-│       │   ├── base/
-│       │   │   └── BaseTest.java          # WebDriver setup/teardown
-│       │   ├── pages/
-│       │   │   ├── LoginPage.java         # Login page object
-│       │   │   └── DashboardPage.java     # Dashboard page object
-│       │   ├── tests/
-│       │   │   ├── ui/
-│       │   │   │   └── LoginTest.java     # UI test cases
-│       │   │   ├── api/
-│       │   │   │   └── AuthApiTest.java   # API test cases
-│       │   │   └── e2e/
-│       │   │       └── EndToEndTest.java  # Full workflow tests
-│       │   └── utils/
-│       │       └── ConfigReader.java      # Config utility
-│       └── resources/
-│           ├── config.properties          # Environment config
-│           └── testng.xml                 # Suite definition
+│
+├── 📄 pom.xml                          ← Maven deps (Selenium, TestNG, RestAssured)
+├── 📄 Jenkinsfile                       ← Declarative CI pipeline
+│
+├── src/test/
+│   ├── java/
+│   │   ├── base/
+│   │   │   └── BaseTest.java           ← WebDriver init, teardown, screenshots
+│   │   ├── pages/                      ← Page Object Model
+│   │   │   ├── LoginPage.java
+│   │   │   ├── DashboardPage.java
+│   │   │   └── ConfigPage.java
+│   │   ├── tests/
+│   │   │   ├── ui/
+│   │   │   │   └── LoginTest.java      ← UI test cases (positive + negative)
+│   │   │   ├── api/
+│   │   │   │   └── AuthApiTest.java    ← API contract tests
+│   │   │   └── e2e/
+│   │   │       └── EndToEndWorkflowTest.java ← Cross-layer validation
+│   │   └── utils/
+│   │       └── ConfigReader.java       ← Reads config.properties
+│   └── resources/
+│       ├── config.properties           ← URLs, credentials, browser
+│       └── testng.xml                  ← Suite definition + groups
+│
 ├── docs/
 │   └── TEST_STRATEGY.md
-├── Jenkinsfile
-├── pom.xml
-└── README.md
+└── .github/workflows/ci.yml            ← GitHub Actions (API tests on push)
 ```
 
 ---
 
-## Running the Tests
+## 🚀 Running Tests
 
 ```bash
-# Clone the repo
+# Clone
 git clone https://github.com/Rajshri12/Automation-Suite.git
 cd Automation-Suite
 
-# Run full suite
+# Full suite
 mvn clean test
 
-# Run only UI tests
+# By layer
 mvn clean test -Dgroups=ui
-
-# Run only API tests
 mvn clean test -Dgroups=api
-
-# Run E2E tests
 mvn clean test -Dgroups=e2e
 
-# Run specific XML suite
+# Custom suite XML
 mvn clean test -DsuiteXmlFile=src/test/resources/testng.xml
 ```
 
 ---
 
-## Configuration
+## ⚙️ Configuration
 
-Edit `src/test/resources/config.properties`:
+`src/test/resources/config.properties`
 
 ```properties
-base.url=http://localhost:3000
-api.base.url=http://localhost:8080
-browser=chrome
-implicit.wait=10
-valid.username=testuser@example.com
-valid.password=Test@1234
+base.url         = http://localhost:3000
+api.base.url     = http://localhost:8080
+browser          = chrome
+implicit.wait    = 10
+valid.username   = testuser@example.com
+valid.password   = Test@1234
 ```
 
 ---
 
-## What Gets Tested
+## 🧪 Test Coverage Summary
 
-| Layer | Scenario | Type |
-|-------|----------|------|
-| UI | Valid login | Positive |
-| UI | Invalid credentials | Negative |
-| UI | Empty form submit | Negative |
-| API | Successful auth | Positive |
-| API | Wrong password | Negative |
-| API | Missing request fields | Negative |
-| API | Unauthorized access | Negative |
-| E2E | Login → Create config → Validate via API | Workflow |
-| E2E | API state reflected correctly in UI | Workflow |
-
----
-
-## Key Design Decisions
-
-**Why POM?** Centralizes locators — one UI change means one file edit, not hunting through 20 tests.
-
-**Why TestNG over JUnit?** Native support for grouping, parallel execution, and data providers without extra setup.
-
-**Why RestAssured?** Fluent DSL makes API assertions readable — `given().body(payload).when().post("/login").then().statusCode(200)` reads like plain English.
-
-**Why E2E tests?** UI and API tests catch component-level bugs. E2E tests catch integration bugs — the kind that slip through when both layers work individually but break together.
+| Layer | Test | Type | Status |
+|-------|------|------|--------|
+| UI | Valid login → dashboard | Positive | ✅ |
+| UI | Invalid password → error msg | Negative | ✅ |
+| UI | Empty form submit | Negative | ✅ |
+| API | `POST /auth/login` 200 | Positive | ✅ |
+| API | `POST /auth/login` 401 | Negative | ✅ |
+| API | `POST /auth/login` 400 | Negative | ✅ |
+| API | `GET /config` no token 403 | Negative | ✅ |
+| E2E | Login → create config via UI → validate via API | Workflow | ✅ |
 
 ---
 
-## Roadmap
+## 🤔 Design Decisions
 
-- [ ] Add Allure reporting
-- [ ] Parallel browser execution (Chrome + Firefox)
-- [ ] Playwright migration for modern browser support
+**Why Page Object Model?**
+Centralises all locators. When the UI ships a locator change, you update one page class — not every test that touches that screen.
+
+**Why TestNG over JUnit?**
+Native grouping (`ui`, `api`, `e2e`), parallel execution config in XML, and data providers are all first-class — no extra libraries needed.
+
+**Why RestAssured?**
+The fluent DSL reads almost like a spec: `given().body(payload).when().post("/login").then().statusCode(200).body("token", notNullValue())`. It doubles as documentation.
+
+**Why E2E tests on top of UI + API tests?**
+Both layers can pass individually while the integration breaks. E2E tests exist specifically to catch that gap.
+
+---
+
+## 🗺️ Roadmap
+
+- [x] UI automation with POM
+- [x] REST API test suite
+- [x] Cross-layer E2E tests
+- [x] Jenkins CI pipeline
+- [ ] Allure HTML reporting
+- [ ] Parallel cross-browser (Chrome + Firefox)
+- [ ] Playwright migration path
 - [ ] AI-assisted test generation for new endpoints
-- [ ] Performance test layer (JMeter integration)
 
-<!-- updated -->
+---
+
+<div align="center">
+
+Made with ☕ and too many `mvn clean test` runs.
+
+</div>
